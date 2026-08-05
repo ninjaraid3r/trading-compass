@@ -55,7 +55,7 @@ export function SessionClocks() {
   return (
     <section className="rounded-lg border border-foreground/25 bg-card p-6 sm:p-8">
       <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1fr_auto_1fr]">
-        <Clock label="PST" zone="America/Los_Angeles" now={now} />
+        <Clock label="PST" zone="America/Los_Angeles" now={now} clock24h={settings.clock24h} showSeconds={settings.showSeconds} />
         <div className="flex flex-col items-center gap-2">
           <span className="text-[0.65rem] tracking-[0.3em] text-muted-foreground">ACTIVE SESSION</span>
           <div
@@ -81,7 +81,7 @@ export function SessionClocks() {
               : ""}
           </span>
         </div>
-        <Clock label="EST" zone="America/New_York" now={now} />
+        <Clock label="EST" zone="America/New_York" now={now} clock24h={settings.clock24h} showSeconds={settings.showSeconds} />
       </div>
     </section>
   );
