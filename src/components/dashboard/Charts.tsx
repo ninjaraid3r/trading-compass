@@ -13,7 +13,9 @@ const BLACK = "#1a1815";
 function baseOptions(height: number) {
   return {
     height,
+    localization: { locale: "en-US" },
     layout: {
+
       background: { color: "transparent" },
       textColor: BLACK,
       fontFamily: "'IBM Plex Mono', monospace",
