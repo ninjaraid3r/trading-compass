@@ -4,6 +4,8 @@ import { QuoteBoard } from "@/components/dashboard/QuoteBoard";
 import { MonthCalendar } from "@/components/dashboard/MonthCalendar";
 import { OptionsPanel } from "@/components/dashboard/OptionsPanel";
 import { SpxChart, RangeChart } from "@/components/dashboard/Charts";
+import { SettingsButton } from "@/components/dashboard/SettingsButton";
+import { SettingsProvider, useSettings } from "@/lib/settings";
 import { SESSIONS } from "@/lib/sessions";
 
 export const Route = createFileRoute("/")({
@@ -46,17 +48,32 @@ function Rail() {
 
 function Dashboard() {
   return (
+    <SettingsProvider>
+      <DashboardBody />
+    </SettingsProvider>
+  );
+}
+
+function DashboardBody() {
+  const { settings } = useSettings();
+
+  return (
     <div className="flex min-h-screen bg-background text-foreground">
       <Rail />
       <main className="mx-auto w-full max-w-[1500px] space-y-6 px-4 py-8 sm:px-8">
         <header className="flex items-end justify-between border-b-2 border-foreground pb-4">
           <h1 className="text-2xl font-bold tracking-[0.25em] sm:text-3xl">TRADING JOURNAL</h1>
-          <p className="text-[0.65rem] tracking-[0.25em] text-muted-foreground">SESSIONS · MACRO · FLOW</p>
+          <div className="flex items-center gap-4">
+            <p className="hidden text-[0.65rem] tracking-[0.25em] text-muted-foreground sm:block">
+              SESSIONS · MACRO · FLOW
+            </p>
+            <SettingsButton />
+          </div>
         </header>
 
         <SessionClocks />
-        <QuoteBoard />
-        <MonthCalendar />
+        {settings.showQuotes && <QuoteBoard />}
+        {settings.showCalendar && <MonthCalendar />}
 
         <section className="rounded-lg border border-foreground/25 bg-card p-5">
           <h2 className="mb-4 text-xs tracking-[0.3em] text-muted-foreground">
@@ -68,14 +85,17 @@ function Dashboard() {
           </div>
         </section>
 
-        <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <div className="rounded-lg border border-foreground/25 bg-card p-5">
-            <RangeChart seed={11} base={5720} title="OPENING RANGE · 09:30–10:00 ET" />
-          </div>
-          <div className="rounded-lg border border-foreground/25 bg-card p-5">
-            <RangeChart seed={29} base={5715} title="NEW DAY OPENING RANGE · 00:00–00:30 ET" />
-          </div>
-        </section>
+        {settings.showOpeningRange && (
+          <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            <div className="rounded-lg border border-foreground/25 bg-card p-5">
+              <RangeChart seed={11} base={5720} title="OPENING RANGE · 09:30–10:00 ET" />
+            </div>
+            <div className="rounded-lg border border-foreground/25 bg-card p-5">
+              <RangeChart seed={29} base={5715} title="NEW DAY OPENING RANGE · 00:00–00:30 ET" />
+            </div>
+          </section>
+        )}
+
       </main>
     </div>
   );
