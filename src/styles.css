@@ -174,5 +174,23 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-display);
   }
 }
+
+@utility today-glow {
+  box-shadow:
+    0 0 0 1px var(--color-foreground),
+    0 0 22px 6px color-mix(in oklab, var(--color-foreground) 22%, transparent);
+  background: radial-gradient(
+    circle at center,
+    color-mix(in oklab, var(--color-foreground) 14%, transparent) 0%,
+    transparent 78%
+  );
+}
+
+@utility num {
+  font-family: var(--font-mono-num);
+  font-variant-numeric: tabular-nums;
+}
+
