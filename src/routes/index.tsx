@@ -120,6 +120,35 @@ function DashboardBody() {
           </div>
         </section>
 
+        <section className="rounded-lg border border-foreground/25 bg-card p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xs tracking-[0.3em] text-muted-foreground">NQ · ES · YM</h2>
+            <div className="flex flex-wrap gap-1">
+              {TIMEFRAMES.map((t) => (
+                <button
+                  key={t.sec}
+                  type="button"
+                  onClick={() => setTf(t.sec)}
+                  aria-pressed={tf === t.sec}
+                  className={`rounded border px-2 py-1 text-[0.65rem] font-semibold tracking-[0.1em] transition-colors ${
+                    tf === t.sec
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-foreground/40 text-foreground hover:bg-foreground/10"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {SYMBOLS.map((s) => (
+              <SymbolChart key={s.symbol} {...s} intervalSec={tf} />
+            ))}
+          </div>
+        </section>
+
+
         {settings.showOpeningRange && (
           <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <div className="rounded-lg border border-foreground/25 bg-card p-5">
