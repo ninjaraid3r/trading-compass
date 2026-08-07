@@ -3,10 +3,11 @@ import { SessionClocks } from "@/components/dashboard/SessionClocks";
 import { QuoteBoard } from "@/components/dashboard/QuoteBoard";
 import { MonthCalendar } from "@/components/dashboard/MonthCalendar";
 import { OptionsPanel } from "@/components/dashboard/OptionsPanel";
-import { SpxChart, RangeChart } from "@/components/dashboard/Charts";
+import { SpxChart, RangeChart, TimeframeChart } from "@/components/dashboard/Charts";
 import { SettingsButton } from "@/components/dashboard/SettingsButton";
 import { SettingsProvider, useSettings } from "@/lib/settings";
 import { SESSIONS } from "@/lib/sessions";
+import { useState } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -56,6 +57,7 @@ function Dashboard() {
 
 function DashboardBody() {
   const { settings } = useSettings();
+  const [showWalls, setShowWalls] = useState(true);
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -76,12 +78,37 @@ function DashboardBody() {
         {settings.showCalendar && <MonthCalendar />}
 
         <section className="rounded-lg border border-foreground/25 bg-card p-5">
-          <h2 className="mb-4 text-xs tracking-[0.3em] text-muted-foreground">
-            SPX · WEEKLY CANDLES WITH DEALER LEVELS
-          </h2>
-          <SpxChart />
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xs tracking-[0.3em] text-muted-foreground">
+              SPX · WEEKLY CANDLES WITH DEALER LEVELS
+            </h2>
+            <button
+              type="button"
+              onClick={() => setShowWalls((v) => !v)}
+              aria-pressed={showWalls}
+              className={`rounded-md border px-3 py-1.5 text-[0.7rem] font-semibold tracking-[0.15em] transition-colors ${
+                showWalls
+                  ? "border-foreground bg-foreground text-background"
+                  : "border-foreground/50 text-foreground hover:bg-foreground/10"
+              }`}
+            >
+              {showWalls ? "PUT / CALL WALLS: ON" : "PUT / CALL WALLS: OFF"}
+            </button>
+          </div>
+          <SpxChart showWalls={showWalls} />
           <div className="mt-5">
             <OptionsPanel />
+          </div>
+        </section>
+
+        <section className="rounded-lg border border-foreground/25 bg-card p-5">
+          <h2 className="mb-4 text-xs tracking-[0.3em] text-muted-foreground">
+            ES · MULTI-TIMEFRAME COMPARISON
+          </h2>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            <TimeframeChart intervalSec={15} title="15 SECOND" showWalls={showWalls} />
+            <TimeframeChart intervalSec={30} title="30 SECOND" showWalls={showWalls} />
+            <TimeframeChart intervalSec={60} title="1 MINUTE" showWalls={showWalls} />
           </div>
         </section>
 
