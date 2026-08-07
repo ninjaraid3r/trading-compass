@@ -3,7 +3,9 @@ import { SessionClocks } from "@/components/dashboard/SessionClocks";
 import { QuoteBoard } from "@/components/dashboard/QuoteBoard";
 import { MonthCalendar } from "@/components/dashboard/MonthCalendar";
 import { OptionsPanel } from "@/components/dashboard/OptionsPanel";
-import { SpxChart, RangeChart, TimeframeChart, SymbolChart, TIMEFRAMES } from "@/components/dashboard/Charts";
+import { SpxChart, TimeframeChart, SymbolChart, TIMEFRAMES, LiveDot } from "@/components/dashboard/Charts";
+import { BondsPanel } from "@/components/dashboard/BondsPanel";
+import { FedMeter } from "@/components/dashboard/FedMeter";
 import { SettingsButton } from "@/components/dashboard/SettingsButton";
 import { SettingsProvider, useSettings } from "@/lib/settings";
 import { SESSIONS } from "@/lib/sessions";
@@ -69,7 +71,7 @@ function DashboardBody() {
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
-      <Rail />
+      {settings.showRail && <Rail />}
       <main className="mx-auto w-full max-w-[1500px] space-y-6 px-4 py-8 sm:px-8">
         <header className="flex items-end justify-between border-b-2 border-foreground pb-4">
           <h1 className="text-2xl font-bold tracking-[0.25em] sm:text-3xl">TRADING JOURNAL</h1>
@@ -77,6 +79,7 @@ function DashboardBody() {
             <p className="hidden text-[0.65rem] tracking-[0.25em] text-muted-foreground sm:block">
               SESSIONS · MACRO · FLOW
             </p>
+            {settings.liveSync && <LiveDot />}
             <SettingsButton />
           </div>
         </header>
@@ -85,6 +88,7 @@ function DashboardBody() {
         {settings.showQuotes && <QuoteBoard />}
         {settings.showCalendar && <MonthCalendar />}
 
+        {settings.showSpx && (
         <section className="rounded-lg border border-foreground/25 bg-card p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xs tracking-[0.3em] text-muted-foreground">
@@ -108,7 +112,9 @@ function DashboardBody() {
             <OptionsPanel />
           </div>
         </section>
+        )}
 
+        {settings.showMultiTimeframe && (
         <section className="rounded-lg border border-foreground/25 bg-card p-5">
           <h2 className="mb-4 text-xs tracking-[0.3em] text-muted-foreground">
             ES · MULTI-TIMEFRAME COMPARISON
@@ -119,7 +125,9 @@ function DashboardBody() {
             <TimeframeChart intervalSec={60} title="1 MINUTE" showWalls={showWalls} />
           </div>
         </section>
+        )}
 
+        {settings.showSymbols && (
         <section className="rounded-lg border border-foreground/25 bg-card p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xs tracking-[0.3em] text-muted-foreground">NQ · ES · YM</h2>
@@ -147,18 +155,12 @@ function DashboardBody() {
             ))}
           </div>
         </section>
-
-
-        {settings.showOpeningRange && (
-          <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="rounded-lg border border-foreground/25 bg-card p-5">
-              <RangeChart seed={11} base={5720} title="OPENING RANGE · 09:30–10:00 ET" />
-            </div>
-            <div className="rounded-lg border border-foreground/25 bg-card p-5">
-              <RangeChart seed={29} base={5715} title="NEW DAY OPENING RANGE · 00:00–00:30 ET" />
-            </div>
-          </section>
         )}
+
+        {settings.showBonds && <BondsPanel />}
+        {settings.showFedMeter && <FedMeter />}
+
+
 
       </main>
     </div>
