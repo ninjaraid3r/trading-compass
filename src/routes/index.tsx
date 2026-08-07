@@ -55,9 +55,17 @@ function Dashboard() {
   );
 }
 
+const SYMBOLS = [
+  { symbol: "NQ · NASDAQ 100", base: 20450, color: "#0b7fd4" },
+  { symbol: "ES · S&P 500", base: 5720, color: "#c0392b" },
+  { symbol: "YM · DOW 30", base: 42180, color: "#1c3f94" },
+];
+
 function DashboardBody() {
   const { settings } = useSettings();
   const [showWalls, setShowWalls] = useState(true);
+  const [tf, setTf] = useState(86400);
+
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
