@@ -272,3 +272,28 @@ export function getOptionsAnalytics(now: Date) {
     spot,
   };
 }
+
+/** Intraday candles at an arbitrary bar interval (seconds). */
+export function getIntradayCandles(now: Date, intervalSec: number, count = 60, base = 5720): Candle[] {
+  const r = rng(daySeed(now) + intervalSec * 13);
+  const out: Candle[] = [];
+  let price = base;
+  const end = Math.floor(now.getTime() / 1000 / intervalSec) * intervalSec;
+  const start = end - count * intervalSec;
+  const vol = Math.sqrt(intervalSec / 60) * 2.2;
+  for (let i = 0; i < count; i++) {
+    const open = price;
+    const close = open + (r() - 0.48) * vol * 2;
+    const high = Math.max(open, close) + r() * vol;
+    const low = Math.min(open, close) - r() * vol;
+    out.push({
+      time: start + i * intervalSec,
+      open: Number(open.toFixed(2)),
+      high: Number(high.toFixed(2)),
+      low: Number(low.toFixed(2)),
+      close: Number(close.toFixed(2)),
+    });
+    price = close;
+  }
+  return out;
+}
