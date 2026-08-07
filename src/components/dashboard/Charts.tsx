@@ -2,13 +2,13 @@ import { useEffect, useRef } from "react";
 import {
   CandlestickSeries,
   createChart,
-  LineSeries,
   type IChartApi,
   type IPriceLine,
   type ISeriesApi,
   type UTCTimestamp,
 } from "lightweight-charts";
-import { getIntradayCandles, getOptionsAnalytics, getSpxWeek } from "@/lib/market-data";
+import { getIntradayCandles, getOptionsAnalytics, getSpxWeek, tickCandle, type Candle } from "@/lib/market-data";
+import { useSettings } from "@/lib/settings";
 
 const BLACK = "#1a1815";
 const CALL_WALL_COLOR = "#2f7a52";
@@ -30,7 +30,6 @@ function baseOptions(height: number) {
     height,
     localization: { locale: "en-US" },
     layout: {
-
       background: { color: "transparent" },
       textColor: BLACK,
       fontFamily: "'IBM Plex Mono', monospace",
@@ -45,10 +44,39 @@ function baseOptions(height: number) {
   };
 }
 
+/**
+ * Streams live ticks into the last bar of a series and rolls a new bar when
+ * the interval elapses. Returns a cleanup function.
+ */
+function startLive(
+  series: ISeriesApi<"Candlestick">,
+  last: Candle,
+  intervalSec: number,
+  refreshMs: number,
+) {
+  let current = last;
+  const vol = Math.max(0.15, Math.sqrt(intervalSec / 60) * 0.9);
+  const id = window.setInterval(() => {
+    const nowSec = Math.floor(Date.now() / 1000);
+    const bucket = Math.floor(nowSec / intervalSec) * intervalSec;
+    if (bucket > current.time) {
+      const open = current.close;
+      current = { time: bucket, open, high: open, low: open, close: open };
+    } else {
+      current = tickCandle(current, vol);
+    }
+    series.update({ ...current, time: current.time as UTCTimestamp });
+  }, refreshMs);
+  return () => window.clearInterval(id);
+}
+
 export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const linesRef = useRef<IPriceLine[]>([]);
+  const { settings } = useSettings();
+  const live = settings.liveSync;
+  const refreshMs = settings.refreshMs;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -63,15 +91,17 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
     seriesRef.current = series;
 
     chart.timeScale().fitContent();
+    const stopLive = live ? startLive(series, candles[candles.length - 1]!, 1800, refreshMs) : undefined;
     const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 600 }));
     ro.observe(ref.current);
     return () => {
+      stopLive?.();
       ro.disconnect();
       chart.remove();
       seriesRef.current = null;
       linesRef.current = [];
     };
-  }, []);
+  }, [live, refreshMs]);
 
   useEffect(() => {
     const series = seriesRef.current;
@@ -96,7 +126,7 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
         axisLabelVisible: true,
       }),
     ];
-  }, [showWalls]);
+  }, [showWalls, live, refreshMs]);
 
   return <div ref={ref} className="w-full" />;
 }
@@ -113,6 +143,9 @@ export function TimeframeChart({
   const ref = useRef<HTMLDivElement>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const linesRef = useRef<IPriceLine[]>([]);
+  const { settings } = useSettings();
+  const live = settings.liveSync;
+  const refreshMs = settings.refreshMs;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -122,20 +155,21 @@ export function TimeframeChart({
       timeScale: { borderColor: "rgba(26,24,21,0.35)", timeVisible: true, secondsVisible: intervalSec < 60 },
     });
     const series = chart.addSeries(CandlestickSeries, { ...BLACK_CANDLES });
-    series.setData(
-      getIntradayCandles(new Date(), intervalSec, 70).map((c) => ({ ...c, time: c.time as UTCTimestamp })),
-    );
+    const data = getIntradayCandles(new Date(), intervalSec, 70);
+    series.setData(data.map((c) => ({ ...c, time: c.time as UTCTimestamp })));
     seriesRef.current = series;
     chart.timeScale().fitContent();
+    const stopLive = live ? startLive(series, data[data.length - 1]!, intervalSec, refreshMs) : undefined;
     const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 320 }));
     ro.observe(ref.current);
     return () => {
+      stopLive?.();
       ro.disconnect();
       chart.remove();
       seriesRef.current = null;
       linesRef.current = [];
     };
-  }, [intervalSec]);
+  }, [intervalSec, live, refreshMs]);
 
   useEffect(() => {
     const series = seriesRef.current;
@@ -160,13 +194,25 @@ export function TimeframeChart({
         axisLabelVisible: true,
       }),
     ];
-  }, [showWalls, intervalSec]);
+  }, [showWalls, intervalSec, live, refreshMs]);
 
   return (
     <div className="rounded-lg border border-foreground/25 bg-card p-4">
-      <h3 className="mb-2 text-[0.7rem] font-bold tracking-[0.2em]">{title}</h3>
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-[0.7rem] font-bold tracking-[0.2em]">{title}</h3>
+        {live && <LiveDot />}
+      </div>
       <div ref={ref} className="w-full" />
     </div>
+  );
+}
+
+export function LiveDot() {
+  return (
+    <span className="flex items-center gap-1.5 text-[0.6rem] font-bold tracking-[0.2em] text-muted-foreground">
+      <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--session-nyam)]" />
+      LIVE
+    </span>
   );
 }
 
@@ -198,6 +244,9 @@ export function SymbolChart({
   intervalSec: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const { settings } = useSettings();
+  const live = settings.liveSync;
+  const refreshMs = settings.refreshMs;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -219,57 +268,28 @@ export function SymbolChart({
       borderDownColor: BLACK,
       borderVisible: true,
     });
-    series.setData(
-      getIntradayCandles(new Date(), intervalSec, 70, base).map((c) => ({
-        ...c,
-        time: c.time as UTCTimestamp,
-      })),
-    );
+    const data = getIntradayCandles(new Date(), intervalSec, 70, base);
+    series.setData(data.map((c) => ({ ...c, time: c.time as UTCTimestamp })));
     chart.timeScale().fitContent();
+    const stopLive = live ? startLive(series, data[data.length - 1]!, intervalSec, refreshMs) : undefined;
     const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 320 }));
     ro.observe(ref.current);
     return () => {
+      stopLive?.();
       ro.disconnect();
       chart.remove();
     };
-  }, [intervalSec, base, color]);
+  }, [intervalSec, base, color, live, refreshMs]);
 
   return (
     <div className="rounded-lg border border-foreground/25 bg-card p-4">
-      <div className="mb-2 flex items-center gap-2">
-        <span className="h-3 w-3 rounded-sm border border-foreground" style={{ backgroundColor: color }} />
-        <h3 className="text-[0.7rem] font-bold tracking-[0.2em]">{symbol}</h3>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-sm border border-foreground" style={{ backgroundColor: color }} />
+          <h3 className="text-[0.7rem] font-bold tracking-[0.2em]">{symbol}</h3>
+        </div>
+        {live && <LiveDot />}
       </div>
-      <div ref={ref} className="w-full" />
-    </div>
-  );
-}
-
-export function RangeChart({ seed, base, title }: { seed: number; base: number; title: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!ref.current) return;
-    const chart = createChart(ref.current, { ...baseOptions(200), width: ref.current.clientWidth });
-    import("@/lib/market-data").then(({ getRangeSeries }) => {
-      const data = getRangeSeries(new Date(), seed, base);
-      const hi = chart.addSeries(LineSeries, { color: "#1c9bb0", lineWidth: 2, title: "OR HIGH" });
-      const lo = chart.addSeries(LineSeries, { color: "#1c9bb0", lineWidth: 2, title: "OR LOW" });
-      hi.setData(data.map((d) => ({ time: d.time as UTCTimestamp, value: d.high })));
-      lo.setData(data.map((d) => ({ time: d.time as UTCTimestamp, value: d.low })));
-      chart.timeScale().fitContent();
-    });
-    const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 400 }));
-    ro.observe(ref.current);
-    return () => {
-      ro.disconnect();
-      chart.remove();
-    };
-  }, [seed, base]);
-
-  return (
-    <div>
-      <h3 className="mb-2 text-[0.7rem] font-bold tracking-[0.2em]">{title}</h3>
       <div ref={ref} className="w-full" />
     </div>
   );
