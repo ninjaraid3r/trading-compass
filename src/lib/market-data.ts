@@ -297,3 +297,81 @@ export function getIntradayCandles(now: Date, intervalSec: number, count = 60, b
   }
   return out;
 }
+
+/* ---------------- Bonds vs yields ---------------- */
+
+export type BondRow = {
+  tenor: string;
+  price: number;
+  yieldPct: number;
+  yieldBp: number;
+  priceChg: number;
+};
+
+export function getBondBoard(now: Date) {
+  const r = rng(daySeed(now) + 41 + now.getHours());
+  const tenors: [string, number, number][] = [
+    ["2Y", 102.14, 4.42],
+    ["5Y", 99.86, 4.11],
+    ["10Y", 97.42, 4.28],
+    ["30Y", 94.18, 4.51],
+  ];
+  const rows: BondRow[] = tenors.map(([tenor, price, y]) => {
+    const bp = Math.round((r() - 0.5) * 12);
+    return {
+      tenor,
+      price: Number((price - bp * 0.06).toFixed(2)),
+      yieldPct: Number((y + bp / 100).toFixed(3)),
+      yieldBp: bp,
+      priceChg: Number((-bp * 0.06).toFixed(2)),
+    };
+  });
+  const two = rows[0]!.yieldPct;
+  const ten = rows[2]!.yieldPct;
+  const spread = Number(((ten - two) * 100).toFixed(0));
+  const risingYields = rows.reduce((a, b) => a + b.yieldBp, 0) > 0;
+  return {
+    rows,
+    curve2s10s: spread,
+    curveState: spread < 0 ? ("Inverted" as const) : spread < 25 ? ("Flat" as const) : ("Steepening" as const),
+    opinion: risingYields
+      ? "Bonds are being sold — yields pressing higher. Duration is a headwind for high-multiple tech; watch NQ underperform ES if 10Y keeps bidding up."
+      : "Bonds catching a bid — yields easing back. Falling real rates typically loosen financial conditions and support index upside into the close.",
+    riskTone: risingYields ? ("Risk-off tilt" as const) : ("Risk-on tilt" as const),
+  };
+}
+
+/* ---------------- Fed sentiment meter ---------------- */
+
+export function getFedSentiment(now: Date) {
+  const r = rng(daySeed(now) + 91);
+  // -100 fully dovish … +100 fully hawkish
+  const score = Math.round((r() - 0.5) * 160);
+  const label =
+    score > 45 ? "Hawkish" : score > 15 ? "Leaning Hawkish" : score > -15 ? "Neutral" : score > -45 ? "Leaning Dovish" : "Dovish";
+  return {
+    score,
+    label,
+    lastSpeaker: "Chair Powell",
+    lastVenue: "Press conference Q&A",
+    cutOdds: Math.round(Math.max(0, Math.min(100, 50 - score / 2))),
+    quote:
+      score > 15
+        ? "\u201cWe are prepared to hold rates at restrictive levels for as long as is appropriate.\u201d"
+        : score < -15
+          ? "\u201cThe risks to our employment mandate have moved into better balance.\u201d"
+          : "\u201cWe remain data dependent and will move carefully meeting by meeting.\u201d",
+  };
+}
+
+/** Advance a candle one tick for live-sync charts. */
+export function tickCandle(c: Candle, vol: number): Candle {
+  const move = (Math.random() - 0.5) * vol;
+  const close = Number((c.close + move).toFixed(2));
+  return {
+    ...c,
+    close,
+    high: Number(Math.max(c.high, close).toFixed(2)),
+    low: Number(Math.min(c.low, close).toFixed(2)),
+  };
+}
