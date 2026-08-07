@@ -32,7 +32,7 @@ function DayCell({
   isToday: boolean;
   events: DayEvent[];
 }) {
-  if (day === null) return <div className="min-h-[92px] rounded-md bg-foreground/[0.03]" />;
+  if (day === null) return <div className="min-h-[104px] rounded-md bg-foreground/[0.03]" />;
 
   const us = events.filter((e) => e.region === "US");
   const tags = Array.from(new Set(us.map((e) => e.tag)));
@@ -41,7 +41,7 @@ function DayCell({
     <HoverCard openDelay={80}>
       <HoverCardTrigger asChild>
         <div
-          className={`min-h-[92px] rounded-md border border-foreground/20 p-1.5 transition-colors hover:bg-foreground/5 ${
+          className={`min-h-[104px] rounded-md border border-foreground/20 p-1.5 transition-colors hover:bg-foreground/5 ${
             isToday ? "today-glow" : ""
           }`}
         >
@@ -49,7 +49,7 @@ function DayCell({
             <span>{day}</span>
             {us.length > 0 && <span className="text-muted-foreground">{us.length}</span>}
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {tags.map((t) => (
               <TagBadge key={t} tag={t} />
             ))}
