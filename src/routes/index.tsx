@@ -3,7 +3,7 @@ import { SessionClocks } from "@/components/dashboard/SessionClocks";
 import { QuoteBoard } from "@/components/dashboard/QuoteBoard";
 import { MonthCalendar } from "@/components/dashboard/MonthCalendar";
 import { OptionsPanel } from "@/components/dashboard/OptionsPanel";
-import { SpxChart, RangeChart, TimeframeChart } from "@/components/dashboard/Charts";
+import { SpxChart, RangeChart, TimeframeChart, SymbolChart, TIMEFRAMES } from "@/components/dashboard/Charts";
 import { SettingsButton } from "@/components/dashboard/SettingsButton";
 import { SettingsProvider, useSettings } from "@/lib/settings";
 import { SESSIONS } from "@/lib/sessions";

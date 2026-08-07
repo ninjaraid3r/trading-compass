@@ -170,6 +170,81 @@ export function TimeframeChart({
   );
 }
 
+export const TIMEFRAMES = [
+  { label: "15s", sec: 15 },
+  { label: "30s", sec: 30 },
+  { label: "1m", sec: 60 },
+  { label: "3m", sec: 180 },
+  { label: "5m", sec: 300 },
+  { label: "15m", sec: 900 },
+  { label: "30m", sec: 1800 },
+  { label: "1h", sec: 3600 },
+  { label: "90m", sec: 5400 },
+  { label: "4h", sec: 14400 },
+  { label: "D", sec: 86400 },
+  { label: "W", sec: 604800 },
+] as const;
+
+/** Colored body, black border + wicks. */
+export function SymbolChart({
+  symbol,
+  base,
+  color,
+  intervalSec,
+}: {
+  symbol: string;
+  base: number;
+  color: string;
+  intervalSec: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ref.current) return;
+    const chart = createChart(ref.current, {
+      ...baseOptions(260),
+      width: ref.current.clientWidth,
+      timeScale: {
+        borderColor: "rgba(26,24,21,0.35)",
+        timeVisible: intervalSec < 86400,
+        secondsVisible: intervalSec < 60,
+      },
+    });
+    const series = chart.addSeries(CandlestickSeries, {
+      upColor: color,
+      downColor: color,
+      wickUpColor: BLACK,
+      wickDownColor: BLACK,
+      borderUpColor: BLACK,
+      borderDownColor: BLACK,
+      borderVisible: true,
+    });
+    series.setData(
+      getIntradayCandles(new Date(), intervalSec, 70, base).map((c) => ({
+        ...c,
+        time: c.time as UTCTimestamp,
+      })),
+    );
+    chart.timeScale().fitContent();
+    const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 320 }));
+    ro.observe(ref.current);
+    return () => {
+      ro.disconnect();
+      chart.remove();
+    };
+  }, [intervalSec, base, color]);
+
+  return (
+    <div className="rounded-lg border border-foreground/25 bg-card p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <span className="h-3 w-3 rounded-sm border border-foreground" style={{ backgroundColor: color }} />
+        <h3 className="text-[0.7rem] font-bold tracking-[0.2em]">{symbol}</h3>
+      </div>
+      <div ref={ref} className="w-full" />
+    </div>
+  );
+}
+
 export function RangeChart({ seed, base, title }: { seed: number; base: number; title: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
