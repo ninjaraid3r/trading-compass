@@ -5,7 +5,14 @@ export type Settings = {
   showSeconds: boolean;
   showQuotes: boolean;
   showCalendar: boolean;
-  showOpeningRange: boolean;
+  showSpx: boolean;
+  showMultiTimeframe: boolean;
+  showSymbols: boolean;
+  showBonds: boolean;
+  showFedMeter: boolean;
+  showRail: boolean;
+  liveSync: boolean;
+  refreshMs: number;
 };
 
 const DEFAULTS: Settings = {
@@ -13,7 +20,14 @@ const DEFAULTS: Settings = {
   showSeconds: true,
   showQuotes: true,
   showCalendar: true,
-  showOpeningRange: true,
+  showSpx: true,
+  showMultiTimeframe: true,
+  showSymbols: true,
+  showBonds: true,
+  showFedMeter: true,
+  showRail: true,
+  liveSync: true,
+  refreshMs: 1000,
 };
 
 const STORAGE_KEY = "tj-desk-settings";
