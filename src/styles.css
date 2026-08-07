@@ -194,3 +194,12 @@
   font-variant-numeric: tabular-nums;
 }
 
+
+@utility neon-tag {
+  text-shadow:
+    0 0 4px color-mix(in oklab, currentColor 85%, transparent),
+    0 0 12px color-mix(in oklab, currentColor 55%, transparent);
+  box-shadow:
+    0 0 6px color-mix(in oklab, currentColor 45%, transparent),
+    inset 0 0 6px color-mix(in oklab, currentColor 22%, transparent);
+}

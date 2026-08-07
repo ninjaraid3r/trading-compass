@@ -9,11 +9,11 @@ function TagBadge({ tag }: { tag: DayEvent["tag"] }) {
   const style = TAG_STYLE[tag];
   return (
     <span
-      className="num rounded-[3px] px-1 text-[0.6rem] leading-[1.15] font-bold"
+      className="num neon-tag rounded-[4px] px-1.5 py-0.5 text-[0.85rem] leading-[1.1] font-bold"
       style={{
         color: style.color,
-        border: `1px solid color-mix(in oklab, ${style.color} 55%, transparent)`,
-        backgroundColor: `color-mix(in oklab, ${style.color} 12%, transparent)`,
+        border: `1px solid color-mix(in oklab, ${style.color} 70%, transparent)`,
+        backgroundColor: `color-mix(in oklab, ${style.color} 14%, transparent)`,
       }}
       title={style.label}
     >
@@ -21,6 +21,7 @@ function TagBadge({ tag }: { tag: DayEvent["tag"] }) {
     </span>
   );
 }
+
 
 function DayCell({
   day,
@@ -31,7 +32,7 @@ function DayCell({
   isToday: boolean;
   events: DayEvent[];
 }) {
-  if (day === null) return <div className="min-h-[92px] rounded-md bg-foreground/[0.03]" />;
+  if (day === null) return <div className="min-h-[104px] rounded-md bg-foreground/[0.03]" />;
 
   const us = events.filter((e) => e.region === "US");
   const tags = Array.from(new Set(us.map((e) => e.tag)));
@@ -40,7 +41,7 @@ function DayCell({
     <HoverCard openDelay={80}>
       <HoverCardTrigger asChild>
         <div
-          className={`min-h-[92px] rounded-md border border-foreground/20 p-1.5 transition-colors hover:bg-foreground/5 ${
+          className={`min-h-[104px] rounded-md border border-foreground/20 p-1.5 transition-colors hover:bg-foreground/5 ${
             isToday ? "today-glow" : ""
           }`}
         >
@@ -48,7 +49,7 @@ function DayCell({
             <span>{day}</span>
             {us.length > 0 && <span className="text-muted-foreground">{us.length}</span>}
           </div>
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {tags.map((t) => (
               <TagBadge key={t} tag={t} />
             ))}
