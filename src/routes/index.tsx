@@ -3,7 +3,7 @@ import { SessionClocks } from "@/components/dashboard/SessionClocks";
 import { QuoteBoard } from "@/components/dashboard/QuoteBoard";
 import { MonthCalendar } from "@/components/dashboard/MonthCalendar";
 import { OptionsPanel } from "@/components/dashboard/OptionsPanel";
-import { SpxChart, RangeChart, TimeframeChart } from "@/components/dashboard/Charts";
+import { SpxChart, RangeChart, TimeframeChart, SymbolChart, TIMEFRAMES } from "@/components/dashboard/Charts";
 import { SettingsButton } from "@/components/dashboard/SettingsButton";
 import { SettingsProvider, useSettings } from "@/lib/settings";
 import { SESSIONS } from "@/lib/sessions";
@@ -55,9 +55,17 @@ function Dashboard() {
   );
 }
 
+const SYMBOLS = [
+  { symbol: "NQ · NASDAQ 100", base: 20450, color: "#0b7fd4" },
+  { symbol: "ES · S&P 500", base: 5720, color: "#c0392b" },
+  { symbol: "YM · DOW 30", base: 42180, color: "#1c3f94" },
+];
+
 function DashboardBody() {
   const { settings } = useSettings();
   const [showWalls, setShowWalls] = useState(true);
+  const [tf, setTf] = useState(86400);
+
 
   return (
     <div className="flex min-h-screen bg-background text-foreground">
@@ -111,6 +119,35 @@ function DashboardBody() {
             <TimeframeChart intervalSec={60} title="1 MINUTE" showWalls={showWalls} />
           </div>
         </section>
+
+        <section className="rounded-lg border border-foreground/25 bg-card p-5">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-xs tracking-[0.3em] text-muted-foreground">NQ · ES · YM</h2>
+            <div className="flex flex-wrap gap-1">
+              {TIMEFRAMES.map((t) => (
+                <button
+                  key={t.sec}
+                  type="button"
+                  onClick={() => setTf(t.sec)}
+                  aria-pressed={tf === t.sec}
+                  className={`rounded border px-2 py-1 text-[0.65rem] font-semibold tracking-[0.1em] transition-colors ${
+                    tf === t.sec
+                      ? "border-foreground bg-foreground text-background"
+                      : "border-foreground/40 text-foreground hover:bg-foreground/10"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+            {SYMBOLS.map((s) => (
+              <SymbolChart key={s.symbol} {...s} intervalSec={tf} />
+            ))}
+          </div>
+        </section>
+
 
         {settings.showOpeningRange && (
           <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
