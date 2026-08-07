@@ -9,11 +9,11 @@ function TagBadge({ tag }: { tag: DayEvent["tag"] }) {
   const style = TAG_STYLE[tag];
   return (
     <span
-      className="num rounded-[3px] px-1 text-[0.6rem] leading-[1.15] font-bold"
+      className="num neon-tag rounded-[4px] px-1.5 py-0.5 text-[0.85rem] leading-[1.1] font-bold"
       style={{
         color: style.color,
-        border: `1px solid color-mix(in oklab, ${style.color} 55%, transparent)`,
-        backgroundColor: `color-mix(in oklab, ${style.color} 12%, transparent)`,
+        border: `1px solid color-mix(in oklab, ${style.color} 70%, transparent)`,
+        backgroundColor: `color-mix(in oklab, ${style.color} 14%, transparent)`,
       }}
       title={style.label}
     >
@@ -21,6 +21,7 @@ function TagBadge({ tag }: { tag: DayEvent["tag"] }) {
     </span>
   );
 }
+
 
 function DayCell({
   day,
