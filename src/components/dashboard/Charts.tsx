@@ -8,6 +8,7 @@ import {
   type UTCTimestamp,
 } from "lightweight-charts";
 import { getIntradayCandles, getOptionsAnalytics, getSpxWeek, tickCandle, type Candle } from "@/lib/market-data";
+import { useLiveSeries } from "@/lib/use-live-series";
 import { useSettings } from "@/lib/settings";
 
 const BLACK = "#1a1815";
@@ -45,8 +46,8 @@ function baseOptions(height: number) {
 }
 
 /**
- * Streams live ticks into the last bar of a series and rolls a new bar when
- * the interval elapses. Returns a cleanup function.
+ * Streams simulated ticks into the last bar of a series (fallback only, used
+ * when the real feed is unavailable). Returns a cleanup function.
  */
 function startLive(
   series: ISeriesApi<"Candlestick">,
@@ -70,6 +71,25 @@ function startLive(
   return () => window.clearInterval(id);
 }
 
+/** Yahoo bars can repeat a timestamp; lightweight-charts needs strictly ascending unique times. */
+function normalize(candles: Candle[]): Candle[] {
+  const seen = new Set<number>();
+  return candles
+    .slice()
+    .sort((a, b) => a.time - b.time)
+    .filter((c) => (seen.has(c.time) ? false : (seen.add(c.time), true)));
+}
+
+function FeedBadge({ live, real }: { live: boolean; real: boolean }) {
+  if (!real) return live ? <LiveDot /> : null;
+  return (
+    <span className="flex items-center gap-1.5 text-[0.6rem] font-bold tracking-[0.2em] text-muted-foreground">
+      <span className="h-2 w-2 animate-pulse rounded-full bg-[var(--session-nyam)]" />
+      REAL
+    </span>
+  );
+}
+
 export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -77,6 +97,8 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
   const { settings } = useSettings();
   const live = settings.liveSync;
   const refreshMs = settings.refreshMs;
+  const { data } = useLiveSeries("^GSPC", 1800, live, refreshMs);
+  const real = (data?.candles.length ?? 0) > 0;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -84,14 +106,15 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
       ...baseOptions(360),
       width: ref.current.clientWidth,
     });
-    const candles = getSpxWeek(new Date());
+    const candles = normalize(real ? data!.candles : getSpxWeek(new Date()));
 
     const series = chart.addSeries(CandlestickSeries, { ...BLACK_CANDLES });
     series.setData(candles.map((c) => ({ ...c, time: c.time as UTCTimestamp })));
     seriesRef.current = series;
 
     chart.timeScale().fitContent();
-    const stopLive = live ? startLive(series, candles[candles.length - 1]!, 1800, refreshMs) : undefined;
+    const stopLive =
+      live && !real ? startLive(series, candles[candles.length - 1]!, 1800, refreshMs) : undefined;
     const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 600 }));
     ro.observe(ref.current);
     return () => {
@@ -101,7 +124,7 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
       seriesRef.current = null;
       linesRef.current = [];
     };
-  }, [live, refreshMs]);
+  }, [live, refreshMs, real, data]);
 
   useEffect(() => {
     const series = seriesRef.current;
@@ -110,23 +133,26 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
     linesRef.current = [];
     if (!showWalls) return;
     const analytics = getOptionsAnalytics(new Date());
+    const spot = data?.last ?? analytics.spot;
+    const callWall = Math.round((spot * (analytics.callWall / analytics.spot)) / 5) * 5;
+    const putWall = Math.round((spot * (analytics.putWall / analytics.spot)) / 5) * 5;
     linesRef.current = [
       series.createPriceLine({
-        price: analytics.callWall,
+        price: callWall,
         color: CALL_WALL_COLOR,
         lineWidth: 2,
-        title: `CALL WALL ${analytics.callWall}`,
+        title: `CALL WALL ${callWall}`,
         axisLabelVisible: true,
       }),
       series.createPriceLine({
-        price: analytics.putWall,
+        price: putWall,
         color: PUT_WALL_COLOR,
         lineWidth: 2,
-        title: `PUT WALL ${analytics.putWall}`,
+        title: `PUT WALL ${putWall}`,
         axisLabelVisible: true,
       }),
     ];
-  }, [showWalls, live, refreshMs]);
+  }, [showWalls, live, refreshMs, real, data]);
 
   return <div ref={ref} className="w-full" />;
 }
@@ -135,10 +161,12 @@ export function TimeframeChart({
   intervalSec,
   title,
   showWalls = false,
+  ticker = "ES=F",
 }: {
   intervalSec: number;
   title: string;
   showWalls?: boolean;
+  ticker?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
@@ -146,6 +174,8 @@ export function TimeframeChart({
   const { settings } = useSettings();
   const live = settings.liveSync;
   const refreshMs = settings.refreshMs;
+  const { data } = useLiveSeries(ticker, intervalSec, live, refreshMs);
+  const real = (data?.candles.length ?? 0) > 0;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -155,11 +185,13 @@ export function TimeframeChart({
       timeScale: { borderColor: "rgba(26,24,21,0.35)", timeVisible: true, secondsVisible: intervalSec < 60 },
     });
     const series = chart.addSeries(CandlestickSeries, { ...BLACK_CANDLES });
-    const data = getIntradayCandles(new Date(), intervalSec, 70);
-    series.setData(data.map((c) => ({ ...c, time: c.time as UTCTimestamp })));
+    const source = real ? data!.candles.slice(-90) : getIntradayCandles(new Date(), intervalSec, 70);
+    const bars = normalize(source);
+    series.setData(bars.map((c) => ({ ...c, time: c.time as UTCTimestamp })));
     seriesRef.current = series;
     chart.timeScale().fitContent();
-    const stopLive = live ? startLive(series, data[data.length - 1]!, intervalSec, refreshMs) : undefined;
+    const stopLive =
+      live && !real ? startLive(series, bars[bars.length - 1]!, intervalSec, refreshMs) : undefined;
     const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 320 }));
     ro.observe(ref.current);
     return () => {
@@ -169,7 +201,7 @@ export function TimeframeChart({
       seriesRef.current = null;
       linesRef.current = [];
     };
-  }, [intervalSec, live, refreshMs]);
+  }, [intervalSec, live, refreshMs, real, data]);
 
   useEffect(() => {
     const series = seriesRef.current;
@@ -178,29 +210,32 @@ export function TimeframeChart({
     linesRef.current = [];
     if (!showWalls) return;
     const a = getOptionsAnalytics(new Date());
+    const spot = data?.last ?? a.spot;
+    const callWall = Math.round((spot * (a.callWall / a.spot)) / 5) * 5;
+    const putWall = Math.round((spot * (a.putWall / a.spot)) / 5) * 5;
     linesRef.current = [
       series.createPriceLine({
-        price: a.callWall,
+        price: callWall,
         color: CALL_WALL_COLOR,
         lineWidth: 2,
-        title: `CALL ${a.callWall}`,
+        title: `CALL ${callWall}`,
         axisLabelVisible: true,
       }),
       series.createPriceLine({
-        price: a.putWall,
+        price: putWall,
         color: PUT_WALL_COLOR,
         lineWidth: 2,
-        title: `PUT ${a.putWall}`,
+        title: `PUT ${putWall}`,
         axisLabelVisible: true,
       }),
     ];
-  }, [showWalls, intervalSec, live, refreshMs]);
+  }, [showWalls, intervalSec, live, refreshMs, real, data]);
 
   return (
     <div className="rounded-lg border border-foreground/25 bg-card p-4">
       <div className="mb-2 flex items-center justify-between">
         <h3 className="text-[0.7rem] font-bold tracking-[0.2em]">{title}</h3>
-        {live && <LiveDot />}
+        <FeedBadge live={live} real={real} />
       </div>
       <div ref={ref} className="w-full" />
     </div>
@@ -237,16 +272,20 @@ export function SymbolChart({
   base,
   color,
   intervalSec,
+  ticker,
 }: {
   symbol: string;
   base: number;
   color: string;
   intervalSec: number;
+  ticker?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const { settings } = useSettings();
   const live = settings.liveSync;
   const refreshMs = settings.refreshMs;
+  const { data } = useLiveSeries(ticker, intervalSec, live, refreshMs);
+  const real = (data?.candles.length ?? 0) > 0;
 
   useEffect(() => {
     if (!ref.current) return;
@@ -268,10 +307,12 @@ export function SymbolChart({
       borderDownColor: BLACK,
       borderVisible: true,
     });
-    const data = getIntradayCandles(new Date(), intervalSec, 70, base);
-    series.setData(data.map((c) => ({ ...c, time: c.time as UTCTimestamp })));
+    const source = real ? data!.candles.slice(-120) : getIntradayCandles(new Date(), intervalSec, 70, base);
+    const bars = normalize(source);
+    series.setData(bars.map((c) => ({ ...c, time: c.time as UTCTimestamp })));
     chart.timeScale().fitContent();
-    const stopLive = live ? startLive(series, data[data.length - 1]!, intervalSec, refreshMs) : undefined;
+    const stopLive =
+      live && !real ? startLive(series, bars[bars.length - 1]!, intervalSec, refreshMs) : undefined;
     const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 320 }));
     ro.observe(ref.current);
     return () => {
@@ -279,7 +320,9 @@ export function SymbolChart({
       ro.disconnect();
       chart.remove();
     };
-  }, [intervalSec, base, color, live, refreshMs]);
+  }, [intervalSec, base, color, live, refreshMs, real, data]);
+
+  const lastPx = real ? data!.last : null;
 
   return (
     <div className="rounded-lg border border-foreground/25 bg-card p-4">
@@ -287,8 +330,9 @@ export function SymbolChart({
         <div className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-sm border border-foreground" style={{ backgroundColor: color }} />
           <h3 className="text-[0.7rem] font-bold tracking-[0.2em]">{symbol}</h3>
+          {lastPx != null && <span className="num text-[0.7rem] font-bold">{lastPx.toFixed(2)}</span>}
         </div>
-        {live && <LiveDot />}
+        <FeedBadge live={live} real={real} />
       </div>
       <div ref={ref} className="w-full" />
     </div>
