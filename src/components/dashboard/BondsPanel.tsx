@@ -2,12 +2,16 @@ import { useEffect, useState } from "react";
 import { getBondBoard } from "@/lib/market-data";
 
 export function BondsPanel() {
-  const [board, setBoard] = useState(() => getBondBoard(new Date()));
+  // Seeded off the local clock, so compute after mount to avoid SSR mismatch.
+  const [board, setBoard] = useState<ReturnType<typeof getBondBoard> | null>(null);
 
   useEffect(() => {
+    setBoard(getBondBoard(new Date()));
     const id = window.setInterval(() => setBoard(getBondBoard(new Date())), 60_000);
     return () => window.clearInterval(id);
   }, []);
+
+  if (!board) return <section className="h-64 rounded-lg border border-foreground/25 bg-card p-5" />;
 
   return (
     <section className="rounded-lg border border-foreground/25 bg-card p-5">
