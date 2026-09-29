@@ -3,6 +3,7 @@
 ## Changes
 - Remove the separate ES 15-second, 30-second, and 1-minute chart row and remove its settings option.
 - Keep the NQ, ES, and YM comparison charts with their shared timeframe selector.
+- Add the full timeframe selector (15s through Weekly) to the large SPX chart while preserving its wall toggle.
 - Add a **Positioning & Off-Exchange** section immediately below Bonds vs Yields:
   - Latest official CFTC COT positioning for ES, NQ, YM, and VIX.
   - Leveraged-fund net position, weekly change, open interest share, report date, and a bullish/bearish read.
