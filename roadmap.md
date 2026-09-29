@@ -1,6 +1,7 @@
 # Roadmap
 
 - [ ] Remove the ES 15-second, 30-second, and 1-minute comparison section and its settings toggle.
+- [ ] Add a full timeframe switcher to the large SPX chart.
 - [ ] Add official CFTC COT positioning below Bonds vs Yields.
 - [ ] Add recent FINRA off-exchange/dark-pool metrics below Bonds vs Yields.
 - [ ] Add a bottom Truth Social feed for Donald Trump, with X included when connected.
