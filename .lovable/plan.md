@@ -22,6 +22,7 @@
 - Fetch public Trump/White House information server-side, cache results, and preserve the last successful result if a source is temporarily unavailable.
 - Truth Social will be the primary feed; X will supplement it after the project’s X connection is completed.
 - Every panel will display its source and “as of” timestamp so delayed releases are not mistaken for live market data.
+- Standardize all visible timestamps across the dashboard to 12-hour Eastern Time with AM/PM and an ET label.
 
 ## Layout
 - Keep the current light-tan/black trading-desk style.
