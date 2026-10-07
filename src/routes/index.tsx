@@ -3,10 +3,14 @@ import { SessionClocks } from "@/components/dashboard/SessionClocks";
 import { QuoteBoard } from "@/components/dashboard/QuoteBoard";
 import { MonthCalendar } from "@/components/dashboard/MonthCalendar";
 import { OptionsPanel } from "@/components/dashboard/OptionsPanel";
-import { SpxChart, TimeframeChart, SymbolChart, TIMEFRAMES, LiveDot } from "@/components/dashboard/Charts";
+import { SpxChart, SymbolChart, TIMEFRAMES, LiveDot } from "@/components/dashboard/Charts";
 import { BondsPanel } from "@/components/dashboard/BondsPanel";
 import { FedMeter } from "@/components/dashboard/FedMeter";
+import { MarketPositioning } from "@/components/dashboard/MarketPositioning";
+import { SeasonalityPanel } from "@/components/dashboard/SeasonalityPanel";
+import { TrumpWire } from "@/components/dashboard/TrumpWire";
 import { SettingsButton } from "@/components/dashboard/SettingsButton";
+import { Button } from "@/components/ui/button";
 import { SettingsProvider, useSettings } from "@/lib/settings";
 import { SESSIONS } from "@/lib/sessions";
 import { useState } from "react";
@@ -25,6 +29,8 @@ export const Route = createFileRoute("/")({
         property: "og:description",
         content: "Session clocks, macro calendar, quotes and options analytics in a single scroll.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Dashboard,
@@ -67,6 +73,7 @@ function DashboardBody() {
   const { settings } = useSettings();
   const [showWalls, setShowWalls] = useState(true);
   const [tf, setTf] = useState(86400);
+  const [spxTf, setSpxTf] = useState(86400);
 
 
   return (
@@ -86,43 +93,29 @@ function DashboardBody() {
 
         <SessionClocks />
         {settings.showQuotes && <QuoteBoard />}
+        {settings.showFedMeter && <FedMeter />}
         {settings.showCalendar && <MonthCalendar />}
 
         {settings.showSpx && (
         <section className="rounded-lg border border-foreground/25 bg-card p-5">
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
             <h2 className="text-xs tracking-[0.3em] text-muted-foreground">
-              SPX · WEEKLY CANDLES WITH DEALER LEVELS
+              SPX · CANDLES WITH DEALER LEVELS
             </h2>
-            <button
-              type="button"
-              onClick={() => setShowWalls((v) => !v)}
-              aria-pressed={showWalls}
-              className={`rounded-md border px-3 py-1.5 text-[0.7rem] font-semibold tracking-[0.15em] transition-colors ${
-                showWalls
-                  ? "border-foreground bg-foreground text-background"
-                  : "border-foreground/50 text-foreground hover:bg-foreground/10"
-              }`}
-            >
+            <Button type="button" size="sm" variant={showWalls ? "default" : "outline"} onClick={() => setShowWalls((v) => !v)} aria-pressed={showWalls} className="text-[0.7rem] tracking-[0.15em]">
               {showWalls ? "PUT / CALL WALLS: ON" : "PUT / CALL WALLS: OFF"}
-            </button>
+            </Button>
           </div>
-          <SpxChart showWalls={showWalls} />
+          <div className="mb-3 flex flex-wrap gap-1">
+            {TIMEFRAMES.map((t) => (
+              <Button key={t.sec} type="button" size="sm" variant={spxTf === t.sec ? "default" : "outline"} onClick={() => setSpxTf(t.sec)} aria-pressed={spxTf === t.sec} className="h-7 px-2 text-[0.65rem] tracking-[0.1em]">
+                {t.label}
+              </Button>
+            ))}
+          </div>
+          <SpxChart showWalls={showWalls} intervalSec={spxTf} />
           <div className="mt-5">
             <OptionsPanel />
-          </div>
-        </section>
-        )}
-
-        {settings.showMultiTimeframe && (
-        <section className="rounded-lg border border-foreground/25 bg-card p-5">
-          <h2 className="mb-4 text-xs tracking-[0.3em] text-muted-foreground">
-            ES · MULTI-TIMEFRAME COMPARISON
-          </h2>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <TimeframeChart intervalSec={15} title="15 SECOND" showWalls={showWalls} />
-            <TimeframeChart intervalSec={30} title="30 SECOND" showWalls={showWalls} />
-            <TimeframeChart intervalSec={60} title="1 MINUTE" showWalls={showWalls} />
           </div>
         </section>
         )}
@@ -133,19 +126,17 @@ function DashboardBody() {
             <h2 className="text-xs tracking-[0.3em] text-muted-foreground">NQ · ES · YM</h2>
             <div className="flex flex-wrap gap-1">
               {TIMEFRAMES.map((t) => (
-                <button
+                <Button
                   key={t.sec}
                   type="button"
+                  size="sm"
+                  variant={tf === t.sec ? "default" : "outline"}
                   onClick={() => setTf(t.sec)}
                   aria-pressed={tf === t.sec}
-                  className={`rounded border px-2 py-1 text-[0.65rem] font-semibold tracking-[0.1em] transition-colors ${
-                    tf === t.sec
-                      ? "border-foreground bg-foreground text-background"
-                      : "border-foreground/40 text-foreground hover:bg-foreground/10"
-                  }`}
+                  className="h-7 px-2 text-[0.65rem] tracking-[0.1em]"
                 >
                   {t.label}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -158,10 +149,9 @@ function DashboardBody() {
         )}
 
         {settings.showBonds && <BondsPanel />}
-        {settings.showFedMeter && <FedMeter />}
-
-
-
+        <MarketPositioning />
+        {settings.showSeasonality && <SeasonalityPanel />}
+        <TrumpWire />
       </main>
     </div>
   );
