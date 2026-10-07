@@ -168,12 +168,12 @@ export const getTrumpWire = createServerFn({ method: "GET" }).handler(async (): 
     const response = await fetch(TRUTH_URL, { headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html" } });
     if (response.ok) {
       const html = await response.text();
-      const blocks = html.match(/<div class="status"[\s\S]*?<div class="status__footer">[\s\S]*?<\/div>\s*<\/div>/g) ?? [];
-      for (const block of blocks.slice(0, 6)) {
+      const blocks = html.split('<div class="status"').slice(1, 7).map((block) => `<div class="status"${block}`);
+      for (const block of blocks) {
         const id = block.match(/data-status-url="[^"]*\/(\d+)"/)?.[1];
         const timestamp = block.match(/<time datetime="([^"]+)"/)?.[1];
         const url = block.match(/class="status__external-link" href="([^"]+)"/)?.[1];
-        const content = block.match(/<div class="status__content"[^>]*>([\s\S]*?)<\/div>/)?.[1];
+        const content = block.match(/<div class="status__content"[^>]*>([\s\S]*?)<button[^>]*class="post-preview-toggle"/)?.[1];
         if (id && timestamp && url && content) posts.push({ id, timestamp, url, text: textContent(content), source: "Truth Social" });
       }
     }

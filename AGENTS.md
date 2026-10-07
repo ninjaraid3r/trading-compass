@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Keep external market and public-figure feed access in `*.functions.ts` server functions so browser code never calls third-party sources directly; this centralizes validation and graceful failure behavior.
