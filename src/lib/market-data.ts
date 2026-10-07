@@ -136,7 +136,7 @@ export function getMonthEvents(year: number, month: number): Record<number, DayE
     if (r() > 0.68)
       list.push({
         tag: "H",
-        time: "08:30 ET",
+        time: "8:30 AM ET",
         title: US_HIGH[Math.floor(r() * US_HIGH.length)]!,
         region: "US",
         detail: "High impact – expect elevated volatility into the release.",
@@ -144,7 +144,7 @@ export function getMonthEvents(year: number, month: number): Record<number, DayE
     if (r() > 0.5)
       list.push({
         tag: "M",
-        time: "10:00 ET",
+        time: "10:00 AM ET",
         title: US_MED[Math.floor(r() * US_MED.length)]!,
         region: "US",
         detail: "Medium impact – can shift intraday trend.",
@@ -152,7 +152,7 @@ export function getMonthEvents(year: number, month: number): Record<number, DayE
     if (r() > 0.45)
       list.push({
         tag: "L",
-        time: "14:00 ET",
+        time: "2:00 PM ET",
         title: US_LOW[Math.floor(r() * US_LOW.length)]!,
         region: "US",
         detail: "Low impact – background data point.",
@@ -160,7 +160,7 @@ export function getMonthEvents(year: number, month: number): Record<number, DayE
     if (dow === 4)
       list.push({
         tag: "K",
-        time: "08:30 ET",
+        time: "8:30 AM ET",
         title: KEY_RELEASES[Math.floor(r() * KEY_RELEASES.length)]!,
         region: "US",
         detail: "Key weekly release tracked by the desk.",
@@ -168,7 +168,7 @@ export function getMonthEvents(year: number, month: number): Record<number, DayE
     if (d === opex)
       list.push({
         tag: "O",
-        time: "16:00 ET",
+        time: "4:00 PM ET",
         title: "Monthly Options Expiration",
         region: "US",
         detail: "Third Friday – monthly equity and index option expiry.",
@@ -176,7 +176,7 @@ export function getMonthEvents(year: number, month: number): Record<number, DayE
     if (dow === 3)
       list.push({
         tag: "V",
-        time: "09:30 ET",
+        time: "9:30 AM ET",
         title: "VIX Expiration",
         region: "US",
         detail: "Weekly VIX futures/options settlement.",
@@ -184,7 +184,7 @@ export function getMonthEvents(year: number, month: number): Record<number, DayE
     if (r() > 0.85)
       list.push({
         tag: "FED",
-        time: "13:00 ET",
+        time: "1:00 PM ET",
         title: "Fed Chair Speech",
         region: "US",
         detail: "Prepared remarks followed by Q&A – headline risk.",
@@ -193,7 +193,7 @@ export function getMonthEvents(year: number, month: number): Record<number, DayE
     for (let i = 0; i < 2; i++) {
       if (r() > 0.55) {
         const w = WORLD[Math.floor(r() * WORLD.length)]!;
-        list.push({ tag: r() > 0.5 ? "H" : "M", time: "03:00 ET", title: w.title, region: "WORLD", detail: w.detail });
+        list.push({ tag: r() > 0.5 ? "H" : "M", time: "3:00 AM ET", title: w.title, region: "WORLD", detail: w.detail });
       }
     }
 
@@ -344,23 +344,16 @@ export function getBondBoard(now: Date) {
 /* ---------------- Fed sentiment meter ---------------- */
 
 export function getFedSentiment(now: Date) {
-  const r = rng(daySeed(now) + 91);
-  // -100 fully dovish … +100 fully hawkish
-  const score = Math.round((r() - 0.5) * 160);
-  const label =
-    score > 45 ? "Hawkish" : score > 15 ? "Leaning Hawkish" : score > -15 ? "Neutral" : score > -45 ? "Leaning Dovish" : "Dovish";
+  void now;
+  const score = 78;
   return {
     score,
-    label,
-    lastSpeaker: "Chair Powell",
-    lastVenue: "Press conference Q&A",
-    cutOdds: Math.round(Math.max(0, Math.min(100, 50 - score / 2))),
-    quote:
-      score > 15
-        ? "\u201cWe are prepared to hold rates at restrictive levels for as long as is appropriate.\u201d"
-        : score < -15
-          ? "\u201cThe risks to our employment mandate have moved into better balance.\u201d"
-          : "\u201cWe remain data dependent and will move carefully meeting by meeting.\u201d",
+    label: "Hawkish" as const,
+    lastSpeaker: "Chair Kevin Warsh",
+    lastVenue: "FOMC press conference · Sep 16, 2026 · 2:30 PM ET",
+    cutOdds: 8,
+    quote: "“Inflation is too high and has been for too long. This Committee will deliver price stability.”",
+    rationale: ["25 bp rate increase", "Inflation remains elevated", "Financial conditions not restrictive"],
   };
 }
 
