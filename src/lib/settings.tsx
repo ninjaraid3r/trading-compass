@@ -1,30 +1,36 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 export type Settings = {
-  clock24h: boolean;
   showSeconds: boolean;
   showQuotes: boolean;
   showCalendar: boolean;
   showSpx: boolean;
-  showMultiTimeframe: boolean;
   showSymbols: boolean;
   showBonds: boolean;
   showFedMeter: boolean;
+  showSeasonality: boolean;
+  showCot: boolean;
+  showDarkPool: boolean;
+  showTrumpWire: boolean;
+  showTrumpSpeech: boolean;
   showRail: boolean;
   liveSync: boolean;
   refreshMs: number;
 };
 
 const DEFAULTS: Settings = {
-  clock24h: false,
   showSeconds: true,
   showQuotes: true,
   showCalendar: true,
   showSpx: true,
-  showMultiTimeframe: true,
   showSymbols: true,
   showBonds: true,
   showFedMeter: true,
+  showSeasonality: true,
+  showCot: true,
+  showDarkPool: true,
+  showTrumpWire: true,
+  showTrumpSpeech: true,
   showRail: true,
   liveSync: true,
   refreshMs: 1000,

@@ -15,7 +15,6 @@ const GROUPS: { title: string; rows: Row[] }[] = [
   {
     title: "CLOCKS",
     rows: [
-      { key: "clock24h", label: "24-hour clocks", hint: "Show PST/EST time without AM/PM" },
       { key: "showSeconds", label: "Show seconds", hint: "Display the seconds counter" },
     ],
   },
@@ -30,10 +29,14 @@ const GROUPS: { title: string; rows: Row[] }[] = [
       { key: "showQuotes", label: "Quote board", hint: "Futures, FX, commodities and VIX" },
       { key: "showCalendar", label: "Macro calendar", hint: "Monthly grid with event badges" },
       { key: "showSpx", label: "SPX & options flow", hint: "Weekly candles, walls and gamma" },
-      { key: "showMultiTimeframe", label: "Multi-timeframe row", hint: "15s / 30s / 1m ES charts" },
       { key: "showSymbols", label: "NQ · ES · YM charts", hint: "Coloured candle comparison row" },
       { key: "showBonds", label: "Bonds vs yields", hint: "Curve table and desk opinion" },
-      { key: "showFedMeter", label: "Fed meter", hint: "Hawkish / dovish sentiment gauge" },
+      { key: "showFedMeter", label: "Chair Warsh meter", hint: "Hawkish / dovish policy stance" },
+      { key: "showSeasonality", label: "Commodity seasonality", hint: "Agriculture, grains and metals" },
+      { key: "showCot", label: "CFTC positioning", hint: "Latest leveraged-fund COT release" },
+      { key: "showDarkPool", label: "Dark pool metrics", hint: "Latest official FINRA ATS release" },
+      { key: "showTrumpWire", label: "Trump market wire", hint: "Truth Social posts and market tone" },
+      { key: "showTrumpSpeech", label: "Trump speech schedule", hint: "Next confirmed official appearance" },
     ],
   },
 ];

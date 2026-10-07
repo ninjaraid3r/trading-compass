@@ -18,18 +18,16 @@ function Clock({
   label,
   zone,
   now,
-  clock24h,
   showSeconds,
 }: {
   label: string;
   zone: string;
   now: Date | null;
-  clock24h: boolean;
   showSeconds: boolean;
 }) {
   const t = now ? partsIn(now, zone) : null;
-  const suffix = clock24h ? "" : t ? (t.hour >= 12 ? "PM" : "AM") : "";
-  const hour = t ? (clock24h ? t.hour : t.hour % 12 || 12) : 0;
+  const suffix = t ? (t.hour >= 12 ? "PM" : "AM") : "";
+  const hour = t ? t.hour % 12 || 12 : 0;
   return (
     <div className="flex flex-col items-center gap-1">
       <span className="text-[0.7rem] tracking-[0.35em] text-muted-foreground">{label}</span>
@@ -55,7 +53,7 @@ export function SessionClocks() {
   return (
     <section className="rounded-lg border border-foreground/25 bg-card p-6 sm:p-8">
       <div className="grid grid-cols-1 items-center gap-8 md:grid-cols-[1fr_auto_1fr]">
-        <Clock label="PST" zone="America/Los_Angeles" now={now} clock24h={settings.clock24h} showSeconds={settings.showSeconds} />
+        <Clock label="PST" zone="America/Los_Angeles" now={now} showSeconds={settings.showSeconds} />
         <div className="flex flex-col items-center gap-2">
           <span className="text-[0.65rem] tracking-[0.3em] text-muted-foreground">ACTIVE SESSION</span>
           <div
@@ -81,7 +79,7 @@ export function SessionClocks() {
               : ""}
           </span>
         </div>
-        <Clock label="EST" zone="America/New_York" now={now} clock24h={settings.clock24h} showSeconds={settings.showSeconds} />
+        <Clock label="EST" zone="America/New_York" now={now} showSeconds={settings.showSeconds} />
       </div>
     </section>
   );

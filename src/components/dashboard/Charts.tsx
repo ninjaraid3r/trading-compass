@@ -90,14 +90,14 @@ function FeedBadge({ live, real }: { live: boolean; real: boolean }) {
   );
 }
 
-export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
+export function SpxChart({ showWalls = true, intervalSec = 86400 }: { showWalls?: boolean; intervalSec?: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const linesRef = useRef<IPriceLine[]>([]);
   const { settings } = useSettings();
   const live = settings.liveSync;
   const refreshMs = settings.refreshMs;
-  const { data } = useLiveSeries("^GSPC", 1800, live, refreshMs);
+  const { data } = useLiveSeries("^GSPC", intervalSec, live, refreshMs);
   const real = (data?.candles.length ?? 0) > 0;
 
   useEffect(() => {
@@ -106,7 +106,8 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
       ...baseOptions(360),
       width: ref.current.clientWidth,
     });
-    const candles = normalize(real ? data!.candles : getSpxWeek(new Date()));
+    const fallback = intervalSec === 1800 ? getSpxWeek(new Date()) : getIntradayCandles(new Date(), intervalSec, 90, 5720);
+    const candles = normalize(real && data ? data.candles : fallback);
 
     const series = chart.addSeries(CandlestickSeries, { ...BLACK_CANDLES });
     series.setData(candles.map((c) => ({ ...c, time: c.time as UTCTimestamp })));
@@ -114,7 +115,7 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
 
     chart.timeScale().fitContent();
     const stopLive =
-      live && !real ? startLive(series, candles[candles.length - 1]!, 1800, refreshMs) : undefined;
+      live && !real && candles.length > 0 ? startLive(series, candles[candles.length - 1] as Candle, intervalSec, refreshMs) : undefined;
     const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 600 }));
     ro.observe(ref.current);
     return () => {
@@ -124,7 +125,7 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
       seriesRef.current = null;
       linesRef.current = [];
     };
-  }, [live, refreshMs, real, data]);
+  }, [live, refreshMs, real, data, intervalSec]);
 
   useEffect(() => {
     const series = seriesRef.current;
@@ -152,7 +153,7 @@ export function SpxChart({ showWalls = true }: { showWalls?: boolean }) {
         axisLabelVisible: true,
       }),
     ];
-  }, [showWalls, live, refreshMs, real, data]);
+  }, [showWalls, live, refreshMs, real, data, intervalSec]);
 
   return <div ref={ref} className="w-full" />;
 }

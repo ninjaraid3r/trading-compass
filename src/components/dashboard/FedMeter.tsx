@@ -15,7 +15,7 @@ export function FedMeter() {
 
   return (
     <section className="rounded-lg border border-foreground/25 bg-card p-5">
-      <h2 className="mb-4 text-xs tracking-[0.3em] text-muted-foreground">FED METER · CHAIR SENTIMENT</h2>
+      <h2 className="mb-4 text-xs tracking-[0.3em] text-muted-foreground">FED METER · CHAIR KEVIN WARSH</h2>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-[220px_1fr] sm:items-center">
         <div className="mx-auto w-full max-w-[220px]">
@@ -35,9 +35,9 @@ export function FedMeter() {
               strokeLinecap="round"
             />
             <g transform={`rotate(${angle} 100 100)`}>
-              <line x1="100" y1="100" x2="100" y2="26" stroke="#1a1815" strokeWidth="4" strokeLinecap="round" />
+              <line x1="100" y1="100" x2="100" y2="26" stroke="var(--foreground)" strokeWidth="4" strokeLinecap="round" />
             </g>
-            <circle cx="100" cy="100" r="7" fill="#1a1815" />
+            <circle cx="100" cy="100" r="7" fill="var(--foreground)" />
           </svg>
           <div className="flex justify-between text-[0.6rem] font-bold tracking-[0.2em] text-muted-foreground">
             <span>DOVISH</span>
@@ -60,6 +60,13 @@ export function FedMeter() {
             </span>
           </div>
           <p className="text-sm italic leading-relaxed">{fed.quote}</p>
+          <div className="flex flex-wrap gap-2">
+            {fed.rationale.map((item) => (
+              <span key={item} className="rounded border border-foreground/30 px-2 py-1 text-[0.65rem] font-bold tracking-[0.08em]">
+                {item.toUpperCase()}
+              </span>
+            ))}
+          </div>
           <div className="grid grid-cols-2 gap-3 border-t border-foreground/20 pt-3 text-xs">
             <div>
               <p className="tracking-[0.2em] text-muted-foreground">SPEAKER</p>
