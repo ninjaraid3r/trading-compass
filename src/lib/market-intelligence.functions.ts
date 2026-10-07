@@ -181,6 +181,27 @@ export const getTrumpWire = createServerFn({ method: "GET" }).handler(async (): 
     // The panel renders a clear unavailable state.
   }
 
+  if (posts.length === 0) {
+    try {
+      const response = await fetch("https://r.jina.ai/https://www.trumpstruth.org/?per_page=8", { headers: { Accept: "text/plain" } });
+      if (response.ok) {
+        const markdown = await response.text();
+        const latest = markdown.split("## Latest posts")[1] ?? "";
+        latest.split(/\n\s*\n/).map((item) => item.trim()).filter(Boolean).slice(0, 6).forEach((item, index) => {
+          posts.push({
+            id: `archive-${index}`,
+            text: item,
+            timestamp: new Date().toISOString(),
+            url: "https://truthsocial.com/@realDonaldTrump",
+            source: "Truth Social",
+          });
+        });
+      }
+    } catch {
+      // The panel renders a clear unavailable state.
+    }
+  }
+
   return {
     posts,
     sentiment: scorePosts(posts),

@@ -43,7 +43,7 @@ export function TrumpWire() {
         <div className="max-h-[430px] space-y-0 overflow-y-auto border-y border-foreground/20">
           {data?.posts.map((post) => (
             <article key={post.id} className="border-b border-foreground/15 py-4 last:border-0">
-              <div className="mb-2 flex items-center justify-between gap-3"><span className="text-[0.65rem] font-bold tracking-[0.16em]">{post.source.toUpperCase()}</span><time className="num text-[0.65rem] text-muted-foreground">{eastern(post.timestamp)}</time></div>
+              <div className="mb-2 flex items-center justify-between gap-3"><span className="text-[0.65rem] font-bold tracking-[0.16em]">{post.source.toUpperCase()}</span><time className="num text-[0.65rem] text-muted-foreground">{post.id.startsWith("archive-") ? `RETRIEVED ${eastern(post.timestamp)}` : eastern(post.timestamp)}</time></div>
               <p className="line-clamp-4 text-sm leading-relaxed">{post.text}</p>
               <a className="mt-2 inline-flex items-center gap-1 text-[0.65rem] font-bold tracking-[0.1em] hover:underline" href={post.url} target="_blank" rel="noreferrer">OPEN POST <ExternalLink size={12} /></a>
             </article>
