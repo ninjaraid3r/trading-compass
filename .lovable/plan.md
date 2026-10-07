@@ -4,6 +4,8 @@
 - Remove the separate ES 15-second, 30-second, and 1-minute chart row and remove its settings option.
 - Keep the NQ, ES, and YM comparison charts with their shared timeframe selector.
 - Add the full timeframe selector (15s through Weekly) to the large SPX chart while preserving its wall toggle.
+- Move the Chair Warsh Fed meter directly below the market quote board.
+- Add an **Agriculture, Grains & Metals Seasonality** section with month-by-month tendencies, current seasonal phase, and clear historical-not-forecast labeling.
 - Add a **Positioning & Off-Exchange** section immediately below Bonds vs Yields:
   - Latest official CFTC COT positioning for ES, NQ, YM, and VIX.
   - Leveraged-fund net position, weekly change, open interest share, report date, and a bullish/bearish read.
@@ -26,7 +28,7 @@
 
 ## Layout
 - Keep the current light-tan/black trading-desk style.
-- Place COT and dark-pool panels in a responsive two-column band beneath Bonds vs Yields.
+- Place the Fed meter directly under quotes, seasonality in its own full-width band, and COT/dark-pool panels in a responsive two-column band beneath Bonds vs Yields.
 - Place speech/sentiment beside the compact social feed at the bottom; stack cleanly on narrow screens.
 
 ## Verification
