@@ -73,20 +73,20 @@ export const getPositioningData = createServerFn({ method: "GET" }).handler(asyn
         const rows = (await response.json()) as Record<string, string>[];
         const row = rows[0];
         if (!row) return null;
-        const long = number(row.lev_money_positions_long ?? row.noncomm_positions_long_all);
-        const short = number(row.lev_money_positions_short ?? row.noncomm_positions_short_all);
+        const long = number(row["lev_money_positions_long"] ?? row["noncomm_positions_long_all"]);
+        const short = number(row["lev_money_positions_short"] ?? row["noncomm_positions_short_all"]);
         const previous = rows[1];
         const previousNet = previous
-          ? number(previous.lev_money_positions_long ?? previous.noncomm_positions_long_all) -
-            number(previous.lev_money_positions_short ?? previous.noncomm_positions_short_all)
+          ? number(previous["lev_money_positions_long"] ?? previous["noncomm_positions_long_all"]) -
+            number(previous["lev_money_positions_short"] ?? previous["noncomm_positions_short_all"])
           : 0;
         const net = long - short;
-        const openInterest = number(row.open_interest_all);
+        const openInterest = number(row["open_interest_all"]);
         const netShare = openInterest ? (net / openInterest) * 100 : 0;
         return {
           symbol,
           market,
-          reportDate: row.report_date_as_yyyy_mm_dd ?? "",
+          reportDate: row["report_date_as_yyyy_mm_dd"] ?? "",
           net,
           weeklyChange: net - previousNet,
           openInterest,
@@ -118,22 +118,22 @@ export const getPositioningData = createServerFn({ method: "GET" }).handler(asyn
         });
         if (!response.ok) return null;
         const rows = (await response.json()) as Record<string, unknown>[];
-        const latestWeek = rows.map((row) => String(row.weekStartDate ?? "")).sort().at(-1);
-        const latest = rows.filter((row) => row.weekStartDate === latestWeek);
+        const latestWeek = rows.map((row) => String(row["weekStartDate"] ?? "")).sort().at(-1);
+        const latest = rows.filter((row) => row["weekStartDate"] === latestWeek);
         if (!latestWeek || latest.length === 0) return null;
-        const shares = latest.reduce((sum, row) => sum + number(row.totalWeeklyShareQuantity), 0);
-        const trades = latest.reduce((sum, row) => sum + number(row.totalWeeklyTradeCount), 0);
-        const notional = latest.reduce((sum, row) => sum + number(row.totalNotionalSum), 0);
-        const top = latest.slice().sort((a, b) => number(b.totalWeeklyShareQuantity) - number(a.totalWeeklyShareQuantity))[0];
+        const shares = latest.reduce((sum, row) => sum + number(row["totalWeeklyShareQuantity"]), 0);
+        const trades = latest.reduce((sum, row) => sum + number(row["totalWeeklyTradeCount"]), 0);
+        const notional = latest.reduce((sum, row) => sum + number(row["totalNotionalSum"]), 0);
+        const top = latest.slice().sort((a, b) => number(b["totalWeeklyShareQuantity"]) - number(a["totalWeeklyShareQuantity"]))[0];
         return {
           symbol,
           weekStart: latestWeek,
-          publishedDate: String(latest.map((row) => row.initialPublishedDate ?? "").sort().at(-1) ?? ""),
+          publishedDate: String(latest.map((row) => row["initialPublishedDate"] ?? "").sort().at(-1) ?? ""),
           shares,
           trades,
           notional,
           averageTrade: trades ? shares / trades : 0,
-          topVenue: String(top?.marketParticipantName ?? "Not reported"),
+          topVenue: String(top?.["marketParticipantName"] ?? "Not reported"),
         };
       } catch {
         return null;
