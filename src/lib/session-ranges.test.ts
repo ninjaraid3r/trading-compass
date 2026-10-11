@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import { calculateSessionRanges, currentDayBars, easternDay } from "./session-ranges";
 
