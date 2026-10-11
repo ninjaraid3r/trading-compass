@@ -13,7 +13,7 @@ const BOTTOM = 48;
 
 export function SessionRangeChart({ ticker, symbol }: { ticker: string; symbol: string }) {
   const { settings } = useSettings();
-  const { data, isPending, isError } = useLiveSeries(ticker, 60, settings.liveSync, settings.refreshMs);
+  const { data, isPending, isError } = useLiveSeries(ticker, 60, settings.liveSync, settings.refreshMs, "5d");
   const [now, setNow] = useState<Date | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
   useEffect(() => {
