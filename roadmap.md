@@ -1,7 +1,5 @@
 # Roadmap
 
-- [ ] Stack full-width ES, NQ and YM below SPX, each with equally sized candlestick and session plots.
-
 - [x] Add current-day session high/low charts under SPX, NQ, ES and YM, with session colors and centered point totals.
 - [x] Test Eastern-day boundaries, session overlaps and point calculations; verify all four charts visually.
 

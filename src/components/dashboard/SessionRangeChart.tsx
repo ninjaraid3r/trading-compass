@@ -5,7 +5,7 @@ import { useLiveSeries } from "@/lib/use-live-series";
 import { calculateSessionRanges, currentDayBars, easternDay, minuteInEasternDay, sessionTimeLabel } from "@/lib/session-ranges";
 
 const WIDTH = 900;
-const HEIGHT = 360;
+const HEIGHT = 340;
 const LEFT = 18;
 const RIGHT = 95;
 const TOP = 25;
@@ -43,7 +43,7 @@ export function SessionRangeChart({ ticker, symbol }: { ticker: string; symbol: 
         <span className="num text-[0.65rem] text-muted-foreground">{day} · ET · 1m data</span>
       </div>
       <div className="overflow-x-auto rounded-md border border-border bg-background">
-        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} preserveAspectRatio="none" className="h-[360px] w-full min-w-[740px]" role="img" aria-label={`${symbol} session highs, lows and point ranges for ${day}`}>
+        <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="h-[280px] w-full min-w-[740px]" role="img" aria-label={`${symbol} session highs, lows and point ranges for ${day}`}>
           {[0, 1, 2, 3, 4].map((index) => {
             const price = lower + (upper - lower) * index / 4;
             return <g key={index}>
