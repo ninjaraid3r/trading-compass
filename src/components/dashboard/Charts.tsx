@@ -292,7 +292,7 @@ export function SymbolChart({
   useEffect(() => {
     if (!ref.current) return;
     const chart = createChart(ref.current, {
-      ...baseOptions(360),
+      ...baseOptions(260),
       width: ref.current.clientWidth,
       timeScale: {
         borderColor: "rgba(26,24,21,0.35)",

@@ -65,8 +65,8 @@ function Dashboard() {
 }
 
 const SYMBOLS = [
-  { symbol: "ES · S&P 500", base: 5720, color: "#c0392b", ticker: "ES=F" },
   { symbol: "NQ · NASDAQ 100", base: 20450, color: "#0b7fd4", ticker: "NQ=F" },
+  { symbol: "ES · S&P 500", base: 5720, color: "#c0392b", ticker: "ES=F" },
   { symbol: "YM · DOW 30", base: 42180, color: "#1c3f94", ticker: "YM=F" },
 ];
 
@@ -142,7 +142,7 @@ function DashboardBody() {
               ))}
             </div>
           </div>
-          <div className="flex flex-col gap-6">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
             {SYMBOLS.map((s) => (
               <SymbolChart key={s.symbol} {...s} intervalSec={tf} />
             ))}
