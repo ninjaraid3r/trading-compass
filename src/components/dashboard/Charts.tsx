@@ -10,6 +10,7 @@ import {
 import { getIntradayCandles, getOptionsAnalytics, getSpxWeek, tickCandle, type Candle } from "@/lib/market-data";
 import { useLiveSeries } from "@/lib/use-live-series";
 import { useSettings } from "@/lib/settings";
+import { SessionRangeChart } from "./SessionRangeChart";
 
 const BLACK = "#1a1815";
 const CALL_WALL_COLOR = "#2f7a52";
@@ -336,6 +337,7 @@ export function SymbolChart({
         <FeedBadge live={live} real={real} />
       </div>
       <div ref={ref} className="w-full" />
+      {ticker && <SessionRangeChart ticker={ticker} symbol={symbol.split(" · ")[0] ?? symbol} />}
     </div>
   );
 }
