@@ -74,12 +74,12 @@ export function SessionRangeChart({ ticker, symbol }: { ticker: string; symbol: 
           {bars.length === 0 && <text x={(WIDTH - RIGHT) / 2} y={HEIGHT / 2} textAnchor="middle" className="fill-muted-foreground text-[13px]">{emptyMessage}</text>}
         </svg>
       </div>
-      <div className="mt-3 grid grid-cols-1 gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(min(100%,240px),1fr))] gap-1.5">
         {ranges.map((range) => <Button key={range.id} variant={selected === range.id ? "secondary" : "ghost"} onClick={() => setSelected((value) => value === range.id ? null : range.id)} aria-pressed={selected === range.id} title={`${sessionTimeLabel(range.start)}–${sessionTimeLabel(range.end)} ET`} className="h-auto min-h-10 justify-start gap-2 px-2 py-1.5 text-left">
           <span className="h-5 w-1 shrink-0" style={{ backgroundColor: range.session.color }} />
           <span className="min-w-0">
             <span className="block text-[0.6rem] font-bold">{range.session.label}{range.session.key === "ASIA" ? ` · ${range.id.endsWith("AM") ? "AM" : "PM"}` : ""}{range.active ? " · ACTIVE" : ""}</span>
-            <span className="num block text-[0.6rem] font-normal text-muted-foreground">{range.points === null ? "—" : `${range.points.toFixed(2)} pts · H ${range.high?.toFixed(2)} / L ${range.low?.toFixed(2)}`}</span>
+            <span className="num block whitespace-normal text-[0.6rem] font-normal text-muted-foreground">{range.points === null ? "—" : `${range.points.toFixed(2)} pts · H ${range.high?.toFixed(2)} / L ${range.low?.toFixed(2)}`}</span>
           </span>
         </Button>)}
       </div>
