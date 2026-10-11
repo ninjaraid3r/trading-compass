@@ -65,15 +65,14 @@ function Dashboard() {
 }
 
 const SYMBOLS = [
-  { symbol: "NQ · NASDAQ 100", base: 20450, color: "#0b7fd4", ticker: "NQ=F" },
   { symbol: "ES · S&P 500", base: 5720, color: "#c0392b", ticker: "ES=F" },
+  { symbol: "NQ · NASDAQ 100", base: 20450, color: "#0b7fd4", ticker: "NQ=F" },
   { symbol: "YM · DOW 30", base: 42180, color: "#1c3f94", ticker: "YM=F" },
 ];
 
 function DashboardBody() {
   const { settings } = useSettings();
   const [showWalls, setShowWalls] = useState(true);
-  const [tf, setTf] = useState(86400);
   const [spxTf, setSpxTf] = useState(86400);
 
 
@@ -123,31 +122,11 @@ function DashboardBody() {
         )}
 
         {settings.showSymbols && (
-        <section className="rounded-lg border border-foreground/25 bg-card p-5">
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-xs tracking-[0.3em] text-muted-foreground">NQ · ES · YM</h2>
-            <div className="flex flex-wrap gap-1">
-              {TIMEFRAMES.map((t) => (
-                <Button
-                  key={t.sec}
-                  type="button"
-                  size="sm"
-                  variant={tf === t.sec ? "default" : "outline"}
-                  onClick={() => setTf(t.sec)}
-                  aria-pressed={tf === t.sec}
-                  className="h-7 px-2 text-[0.65rem] tracking-[0.1em]"
-                >
-                  {t.label}
-                </Button>
-              ))}
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="space-y-6">
             {SYMBOLS.map((s) => (
-              <SymbolChart key={s.symbol} {...s} intervalSec={tf} />
+              <SymbolChart key={s.symbol} {...s} />
             ))}
-          </div>
-        </section>
+        </div>
         )}
 
         {settings.showBonds && <BondsPanel />}

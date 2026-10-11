@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CandlestickSeries,
   createChart,
@@ -11,6 +11,7 @@ import { getIntradayCandles, getOptionsAnalytics, getSpxWeek, tickCandle, type C
 import { useLiveSeries } from "@/lib/use-live-series";
 import { useSettings } from "@/lib/settings";
 import { SessionRangeChart } from "./SessionRangeChart";
+import { Button } from "@/components/ui/button";
 
 const BLACK = "#1a1815";
 const CALL_WALL_COLOR = "#2f7a52";
@@ -273,15 +274,14 @@ export function SymbolChart({
   symbol,
   base,
   color,
-  intervalSec,
   ticker,
 }: {
   symbol: string;
   base: number;
   color: string;
-  intervalSec: number;
   ticker?: string;
 }) {
+  const [intervalSec, setIntervalSec] = useState(86400);
   const ref = useRef<HTMLDivElement>(null);
   const { settings } = useSettings();
   const live = settings.liveSync;
@@ -292,7 +292,7 @@ export function SymbolChart({
   useEffect(() => {
     if (!ref.current) return;
     const chart = createChart(ref.current, {
-      ...baseOptions(260),
+      ...baseOptions(360),
       width: ref.current.clientWidth,
       timeScale: {
         borderColor: "rgba(26,24,21,0.35)",
@@ -309,12 +309,13 @@ export function SymbolChart({
       borderDownColor: BLACK,
       borderVisible: true,
     });
-    const source = real ? data!.candles.slice(-120) : getIntradayCandles(new Date(), intervalSec, 70, base);
+    const source = real && data ? data.candles.slice(-120) : getIntradayCandles(new Date(), intervalSec, 70, base);
     const bars = normalize(source);
     series.setData(bars.map((c) => ({ ...c, time: c.time as UTCTimestamp })));
     chart.timeScale().fitContent();
+    const lastBar = bars[bars.length - 1];
     const stopLive =
-      live && !real ? startLive(series, bars[bars.length - 1]!, intervalSec, refreshMs) : undefined;
+      live && !real && lastBar ? startLive(series, lastBar, intervalSec, refreshMs) : undefined;
     const ro = new ResizeObserver(() => chart.applyOptions({ width: ref.current?.clientWidth ?? 320 }));
     ro.observe(ref.current);
     return () => {
@@ -324,20 +325,27 @@ export function SymbolChart({
     };
   }, [intervalSec, base, color, live, refreshMs, real, data]);
 
-  const lastPx = real ? data!.last : null;
+  const lastPx = real ? data?.last : null;
 
   return (
-    <div className="rounded-lg border border-foreground/25 bg-card p-4">
-      <div className="mb-2 flex items-center justify-between gap-2">
+    <section aria-label={`${symbol.split(" · ")[0]} chart`} className="rounded-lg border border-foreground/25 bg-card p-5">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <span className="h-3 w-3 rounded-sm border border-foreground" style={{ backgroundColor: color }} />
-          <h3 className="text-[0.7rem] font-bold tracking-[0.2em]">{symbol}</h3>
+          <h2 className="text-xs font-bold">{symbol}</h2>
           {lastPx != null && <span className="num text-[0.7rem] font-bold">{lastPx.toFixed(2)}</span>}
         </div>
         <FeedBadge live={live} real={real} />
       </div>
+      <div className="mb-3 flex flex-wrap gap-1" aria-label={`${symbol.split(" · ")[0]} timeframe`}>
+        {TIMEFRAMES.map((timeframe) => (
+          <Button key={timeframe.sec} type="button" size="sm" variant={intervalSec === timeframe.sec ? "default" : "outline"} onClick={() => setIntervalSec(timeframe.sec)} aria-pressed={intervalSec === timeframe.sec} className="h-7 px-2 text-[0.65rem] tracking-[0.1em]">
+            {timeframe.label}
+          </Button>
+        ))}
+      </div>
       <div ref={ref} className="w-full" />
       {ticker && <SessionRangeChart ticker={ticker} symbol={symbol.split(" · ")[0] ?? symbol} />}
-    </div>
+    </section>
   );
 }
