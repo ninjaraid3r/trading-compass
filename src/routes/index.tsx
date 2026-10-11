@@ -10,6 +10,7 @@ import { MarketPositioning } from "@/components/dashboard/MarketPositioning";
 import { SeasonalityPanel } from "@/components/dashboard/SeasonalityPanel";
 import { TrumpWire } from "@/components/dashboard/TrumpWire";
 import { SettingsButton } from "@/components/dashboard/SettingsButton";
+import { SessionRangeChart } from "@/components/dashboard/SessionRangeChart";
 import { Button } from "@/components/ui/button";
 import { SettingsProvider, useSettings } from "@/lib/settings";
 import { SESSIONS } from "@/lib/sessions";
@@ -114,6 +115,7 @@ function DashboardBody() {
             ))}
           </div>
           <SpxChart showWalls={showWalls} intervalSec={spxTf} />
+          <SessionRangeChart ticker="^GSPC" symbol="SPX" />
           <div className="mt-5">
             <OptionsPanel />
           </div>

@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep external market and public-figure feed access in `*.functions.ts` server functions so browser code never calls third-party sources directly; this centralizes validation and graceful failure behavior.
+- Compute current Eastern-day session ranges in a shared pure module from reported one-minute bars, separate from candlestick timeframes; this preserves overlapping windows, testable boundaries, and honest missing-data states.

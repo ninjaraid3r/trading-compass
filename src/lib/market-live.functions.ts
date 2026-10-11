@@ -39,7 +39,7 @@ export const getLiveSeries = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<LiveSeries> => {
     const url =
       `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(data.symbol)}` +
-      `?interval=${encodeURIComponent(data.interval)}&range=${encodeURIComponent(data.range)}`;
+       `?interval=${encodeURIComponent(data.interval)}&range=${encodeURIComponent(data.range)}&includePrePost=true`;
 
     const empty: LiveSeries = { symbol: data.symbol, candles: [], last: null, previousClose: null };
     try {
@@ -57,8 +57,9 @@ export const getLiveSeries = createServerFn({ method: "GET" })
         const h = q.high?.[i];
         const l = q.low?.[i];
         const c = q.close?.[i];
-        if (o == null || h == null || l == null || c == null) continue;
-        candles.push({ time: ts[i]!, open: o, high: h, low: l, close: c });
+        const time = ts[i];
+        if (time == null || o == null || h == null || l == null || c == null) continue;
+        candles.push({ time, open: o, high: h, low: l, close: c });
       }
       return {
         symbol: data.symbol,
