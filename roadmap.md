@@ -1,5 +1,8 @@
 # Roadmap
 
+- [ ] Add current-day session high/low charts under SPX, NQ, ES and YM, with session colors and centered point totals.
+- [ ] Test Eastern-day boundaries, session overlaps and point calculations; verify all four charts visually.
+
 - [x] Remove the ES 15-second, 30-second, and 1-minute comparison section and its settings toggle.
 - [x] Add a full timeframe switcher to the large SPX chart.
 - [x] Standardize every displayed timestamp to 12-hour Eastern Time.
